@@ -2,13 +2,14 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/alexedwards/scs"
 	qt "github.com/frankban/quicktest"
-	"github.com/godwhoa/upboat/pkg/upboat"
+	"github.com/godwhoa/upboat/pkg/users"
 	"go.uber.org/zap"
 )
 
@@ -18,19 +19,19 @@ type mockService struct {
 	logincalled bool
 }
 
-func (s *mockService) Register(u *upboat.User, password string) (*upboat.User, error) {
+func (s *mockService) Register(ctx context.Context, u *users.User, password string) (*users.User, error) {
 	if s.regerr {
-		return nil, upboat.ErrUserAlreadyExists
+		return nil, users.ErrUserAlreadyExists
 	}
 	return u, nil
 }
 
-func (s *mockService) Login(email string, password string) (*upboat.User, error) {
+func (s *mockService) Login(ctx context.Context, email string, password string) (*users.User, error) {
 	s.logincalled = true
 	if s.loginerr {
-		return nil, upboat.ErrInvalidCredentials
+		return nil, users.ErrInvalidCredentials
 	}
-	return &upboat.User{
+	return &users.User{
 		ID:       0,
 		Username: "blah",
 		Email:    "blah@blah.com",
@@ -51,15 +52,16 @@ func post(endpoint, payload string) (*http.Request, error) {
 
 func TestLogin_Invalid_Input(t *testing.T) {
 	c := qt.New(t)
+	log, sm, service := deps()
+	userapi := NewUsersAPI(service, sm, log)
+
 	req, err := post("/api/login", `{"email":"blah@blah.com"}`)
 	c.Assert(err, qt.IsNil)
 	c.Assert(req, qt.Not(qt.IsNil))
 
 	rr := httptest.NewRecorder()
 
-	log, sm, service := deps()
-
-	http.HandlerFunc(Login(service, sm, log)).
+	http.HandlerFunc(userapi.Login).
 		ServeHTTP(rr, req)
 	c.Assert(service.logincalled, qt.Equals, false)
 	c.Assert(rr.Code, qt.Equals, http.StatusBadRequest)
@@ -67,30 +69,32 @@ func TestLogin_Invalid_Input(t *testing.T) {
 
 func TestLoginOK(t *testing.T) {
 	c := qt.New(t)
+	log, sm, service := deps()
+	userapi := NewUsersAPI(service, sm, log)
+
 	req, err := post("/api/login", `{"email":"blah@blah.com", "password":"password"}`)
 	c.Assert(err, qt.IsNil)
 	c.Assert(req, qt.Not(qt.IsNil))
 
 	rr := httptest.NewRecorder()
 
-	log, sm, service := deps()
-
-	http.HandlerFunc(Login(service, sm, log)).
+	http.HandlerFunc(userapi.Login).
 		ServeHTTP(rr, req)
 	c.Assert(rr.Code, qt.Equals, http.StatusOK)
 }
 
 func TestLogout(t *testing.T) {
 	c := qt.New(t)
+	log, sm, service := deps()
+	userapi := NewUsersAPI(service, sm, log)
+
 	req, err := post("/api/login", `{"email":"blah@blah.com", "password":"password"}`)
 	c.Assert(err, qt.IsNil)
 	c.Assert(req, qt.Not(qt.IsNil))
 
 	rr := httptest.NewRecorder()
 
-	log, sm, service := deps()
-
-	http.HandlerFunc(Login(service, sm, log)).
+	http.HandlerFunc(userapi.Login).
 		ServeHTTP(rr, req)
 	c.Assert(rr.Code, qt.Equals, http.StatusOK)
 
@@ -99,38 +103,39 @@ func TestLogout(t *testing.T) {
 	c.Assert(req, qt.Not(qt.IsNil))
 	rr = httptest.NewRecorder()
 
-	http.HandlerFunc(Logout(sm, log)).
+	http.HandlerFunc(userapi.Logout).
 		ServeHTTP(rr, req)
 	c.Assert(rr.Code, qt.Equals, http.StatusOK)
 }
 
 func TestRegisterAlreadyExists(t *testing.T) {
 	c := qt.New(t)
+	log, sm, service := deps()
+	service.regerr = true
+	userapi := NewUsersAPI(service, sm, log)
+
 	payload := []byte(`{"email":"blah@blah.com", "username": "blah", "password":"password"}`)
 	req, err := http.NewRequest("POST", "/api/register", bytes.NewBuffer(payload))
 	c.Assert(err, qt.IsNil)
 
 	rr := httptest.NewRecorder()
 
-	log, _ := zap.NewProduction()
-	service := &mockService{regerr: true}
-
-	http.HandlerFunc(Register(service, log)).
+	http.HandlerFunc(userapi.Register).
 		ServeHTTP(rr, req)
-	c.Assert(rr.Code, qt.Equals, http.StatusBadRequest)
+	c.Assert(rr.Code, qt.Equals, http.StatusConflict)
 }
 
 func TestRegisterOK(t *testing.T) {
 	c := qt.New(t)
+	log, sm, service := deps()
+	userapi := NewUsersAPI(service, sm, log)
+
 	req, err := post("/api/register", `{"email":"blah@blah.com", "username": "blah", "password":"password"}`)
 	c.Assert(err, qt.IsNil)
 
 	rr := httptest.NewRecorder()
 
-	log, _ := zap.NewProduction()
-	service := &mockService{}
-
-	http.HandlerFunc(Register(service, log)).
+	http.HandlerFunc(userapi.Register).
 		ServeHTTP(rr, req)
 	c.Assert(rr.Code, qt.Equals, http.StatusOK)
 }

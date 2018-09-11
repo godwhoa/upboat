@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
@@ -16,7 +17,7 @@ type mockRepo struct {
 	u             *User
 }
 
-func (r *mockRepo) Create(user *User) error {
+func (r *mockRepo) Create(ctx context.Context, user *User) error {
 	if r.createerr {
 		return ErrUserAlreadyExists
 	}
@@ -25,14 +26,14 @@ func (r *mockRepo) Create(user *User) error {
 	return nil
 
 }
-func (r *mockRepo) Find(id int) (*User, error) {
+func (r *mockRepo) Find(ctx context.Context, id int) (*User, error) {
 	r.findcalled = true
 	if r.finderr {
 		return nil, ErrUserNotFound
 	}
 	return r.u, nil
 }
-func (r *mockRepo) FindByEmail(email string) (*User, error) {
+func (r *mockRepo) FindByEmail(ctx context.Context, email string) (*User, error) {
 	r.byemailcalled = true
 	if r.finderr {
 		return nil, ErrUserNotFound
@@ -49,9 +50,10 @@ func TestNewService(t *testing.T) {
 // Ensure Register hashes the password
 func TestService_Register_EnsureHashing(t *testing.T) {
 	c := qt.New(t)
+	ctx := context.Background()
 	service := NewService(&mockRepo{})
 
-	user, err := service.Register(&User{Username: "blah", Email: "blah@blah.com"}, "password")
+	user, err := service.Register(ctx, &User{Username: "blah", Email: "blah@blah.com"}, "password")
 	c.Assert(user, qt.Not(qt.IsNil))
 	c.Assert(err, qt.IsNil)
 
@@ -64,18 +66,21 @@ func TestService_Register_EnsureHashing(t *testing.T) {
 // Ensure Register calls UserRepository.Create()
 func TestService_Register_EnsureCreate(t *testing.T) {
 	c := qt.New(t)
+	ctx := context.Background()
+
 	repo := &mockRepo{}
 	service := NewService(repo)
-	service.Register(&User{Username: "blah", Email: "blah@blah.com"}, "password")
+	service.Register(ctx, &User{Username: "blah", Email: "blah@blah.com"}, "password")
 	c.Assert(repo.createcalled, qt.Equals, true)
 }
 
 // Ensure it propogades ErrUserAlreadyExists
 func TestService_Register_AlreadyExists(t *testing.T) {
 	c := qt.New(t)
+	ctx := context.Background()
 	repo := &mockRepo{createerr: true}
 	service := NewService(repo)
-	user, err := service.Register(&User{Username: "blah", Email: "blah@blah.com"}, "password")
+	user, err := service.Register(ctx, &User{Username: "blah", Email: "blah@blah.com"}, "password")
 	c.Assert(err, qt.Equals, ErrUserAlreadyExists)
 	c.Assert(user, qt.IsNil)
 }
@@ -83,15 +88,17 @@ func TestService_Register_AlreadyExists(t *testing.T) {
 // "OK" case for register
 func TestService_Register_OK(t *testing.T) {
 	c := qt.New(t)
+	ctx := context.Background()
 	repo := &mockRepo{}
 	service := NewService(repo)
-	user, err := service.Register(&User{Username: "blah", Email: "blah@blah.com"}, "password")
+	user, err := service.Register(ctx, &User{Username: "blah", Email: "blah@blah.com"}, "password")
 	c.Assert(err, qt.IsNil)
 	c.Assert(user, qt.Not(qt.IsNil))
 }
 
 func TestService_Login_OK(t *testing.T) {
 	c := qt.New(t)
+	ctx := context.Background()
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	u := &User{
 		ID:       0,
@@ -100,13 +107,15 @@ func TestService_Login_OK(t *testing.T) {
 		Hash:     string(hash),
 	}
 	service := NewService(&mockRepo{u: u})
-	user, err := service.Login("blah@blah.com", "password")
+	user, err := service.Login(ctx, "blah@blah.com", "password")
 	c.Assert(err, qt.IsNil)
 	c.Assert(user, qt.Not(qt.IsNil))
 }
 
 func TestService_Login_NotFound(t *testing.T) {
 	c := qt.New(t)
+	ctx := context.Background()
+
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	u := &User{
 		ID:       0,
@@ -115,13 +124,14 @@ func TestService_Login_NotFound(t *testing.T) {
 		Hash:     string(hash),
 	}
 	service := NewService(&mockRepo{u: u, finderr: true})
-	user, err := service.Login("apple@kak.com", "password")
+	user, err := service.Login(ctx, "apple@kak.com", "password")
 	c.Assert(user, qt.IsNil)
 	c.Assert(err, qt.Equals, ErrUserNotFound)
 }
 
 func TestService_LoginInvalid(t *testing.T) {
 	c := qt.New(t)
+	ctx := context.Background()
 	hash, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	u := &User{
 		ID:       0,
@@ -130,7 +140,7 @@ func TestService_LoginInvalid(t *testing.T) {
 		Hash:     string(hash),
 	}
 	service := NewService(&mockRepo{u: u})
-	user, err := service.Login("blah@blah.com", "passwordddd")
+	user, err := service.Login(ctx, "blah@blah.com", "passwordddd")
 	c.Assert(user, qt.IsNil)
 	c.Assert(err, qt.Equals, ErrInvalidCredentials)
 }
