@@ -24,12 +24,13 @@ func NewUsersAPI(service users.Service, sm *scs.Manager, log *zap.Logger) *Users
 
 // Login handles login request, ok sucess sets a session cookie
 func (u *UsersAPI) Login(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	req := &loginRequest{}
 	if !DecodeValidate(w, r, req) {
 		return
 	}
 
-	user, err := u.service.Login(req.Email, req.Password)
+	user, err := u.service.Login(ctx, req.Email, req.Password)
 	if err == users.ErrInvalidCredentials {
 		Respond(w, &response{
 			Code:    http.StatusUnauthorized,
@@ -57,12 +58,13 @@ func (u *UsersAPI) Login(w http.ResponseWriter, r *http.Request) {
 
 // Register handles user registration request
 func (u *UsersAPI) Register(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	req := &registerRequest{}
 	if !DecodeValidate(w, r, req) {
 		return
 	}
 
-	_, err := u.service.Register(&users.User{
+	_, err := u.service.Register(ctx, &users.User{
 		Email:    req.Email,
 		Username: req.Username,
 	}, req.Password)

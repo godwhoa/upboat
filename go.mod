@@ -19,6 +19,9 @@ require (
 	github.com/go-sql-driver/mysql v1.4.0 // indirect
 	github.com/gofrs/uuid v3.1.0+incompatible
 	github.com/golang-migrate/migrate v3.4.0+incompatible
+	github.com/gorilla/context v1.1.1 // indirect
+	github.com/gorilla/mux v1.6.2 // indirect
+	github.com/gotestyourself/gotestyourself v2.1.0+incompatible // indirect
 	github.com/jmoiron/sqlx v0.0.0-20180614180643-0dae4fefe7c0
 	github.com/lib/pq v1.0.0
 	github.com/mattn/go-sqlite3 v1.9.0 // indirect
@@ -32,6 +35,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pressly/chi v3.3.3+incompatible
 	github.com/sirupsen/logrus v1.0.6 // indirect
+	github.com/stevvooe/resumable v0.0.0-20180830230917-22b14a53ba50 // indirect
 	github.com/stretchr/testify v1.2.2 // indirect
 	go.opencensus.io v0.16.0
 	go.uber.org/atomic v1.3.2 // indirect
@@ -40,4 +44,6 @@ require (
 	golang.org/x/crypto v0.0.0-20180904163835-0709b304e793
 	golang.org/x/net v0.0.0-20180906233101-161cd47e91fd // indirect
 	golang.org/x/sys v0.0.0-20180906133057-8cf3aee42992 // indirect
+	google.golang.org/appengine v1.1.0 // indirect
+	gotest.tools v2.1.0+incompatible // indirect
 )

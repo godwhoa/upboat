@@ -60,7 +60,7 @@ func main() {
 	}
 	// setup services
 	us := users.NewService(repos.UserRepo)
-	us = users.Chain(us, users.Logging(log))
+	us = users.Chain(us, users.Logging(log), users.Tracing)
 	ps := posts.NewService(repos.PostRepo)
 	ps = posts.Chain(ps, posts.Logging(log), posts.Tracing)
 	usersapi := api.NewUsersAPI(us, sessionManager, log)

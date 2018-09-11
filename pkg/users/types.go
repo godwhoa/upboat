@@ -1,6 +1,9 @@
 package users
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 var (
 	// ErrUserAlreadyExists is returned if an user is already registred with the given email or username.
@@ -22,15 +25,15 @@ type User struct {
 // Repository handles storing/retrieving an user
 type Repository interface {
 	// Create creates a new user, returns ErrUserAlreadyExists if user already exists with same email/username.
-	Create(user *User) error
+	Create(ctx context.Context, user *User) error
 	// FindByEmail finds an user by ID, returns ErrUserNotFound if no user is found
-	Find(id int) (*User, error)
+	Find(ctx context.Context, id int) (*User, error)
 	// FindByEmail finds an user by email, returns ErrUserNotFound if no user is found
-	FindByEmail(email string) (*User, error)
+	FindByEmail(ctx context.Context, email string) (*User, error)
 }
 
 // Service handles creation and authentication of a user
 type Service interface {
-	Register(u *User, password string) (*User, error)
-	Login(email string, password string) (*User, error)
+	Register(ctx context.Context, user *User, password string) (*User, error)
+	Login(ctx context.Context, email string, password string) (*User, error)
 }

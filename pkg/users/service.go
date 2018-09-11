@@ -1,6 +1,8 @@
 package users
 
 import (
+	"context"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -14,21 +16,21 @@ func NewService(repo Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) Register(u *User, password string) (*User, error) {
+func (s *service) Register(ctx context.Context, u *User, password string) (*User, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 	u.Hash = string(hashed)
 
-	if err := s.repo.Create(u); err != nil {
+	if err := s.repo.Create(ctx, u); err != nil {
 		return nil, err
 	}
-	return s.repo.FindByEmail(u.Email)
+	return s.repo.FindByEmail(ctx, u.Email)
 }
 
-func (s *service) Login(email string, password string) (*User, error) {
-	user, err := s.repo.FindByEmail(email)
+func (s *service) Login(ctx context.Context, email string, password string) (*User, error) {
+	user, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
