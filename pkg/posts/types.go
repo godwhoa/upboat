@@ -1,0 +1,36 @@
+package posts
+
+import (
+	"context"
+	"errors"
+)
+
+// Post models a post
+type Post struct {
+	ID       int    `json:"id"`
+	AuthorID int    `json:"author_id"`
+	Title    string `json:"title"`
+	Body     string `json:"body"`
+}
+
+var (
+	// ErrPostNotFound for when post is not found.
+	ErrPostNotFound = errors.New("Post not found")
+	ErrUnauthorized = errors.New("Unauthorized to delete/edit the post")
+)
+
+// Repository handles storing posts and their votes
+type Repository interface {
+	Create(ctx context.Context, post *Post) (id int, err error)
+	Get(postID int) (post *Post, err error)
+	Edit(post *Post) error
+	Delete(authorID, postID int) error
+	Vote(postID, voterID, delta int) error
+	Unvote(postID, voterID int) error
+	Votes(postID int) (votes int, err error)
+}
+
+// Service is a thin layer around Repository which sanitizes Title and Body
+type Service interface {
+	Repository
+}
