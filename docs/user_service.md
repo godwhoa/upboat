@@ -3,7 +3,7 @@
 ## Register
 
 ### Request
-Endpoint: `/api/user/register`<br>
+Endpoint: `/v1/api/users`<br>
 Method: `POST`<br>
 Request Body: 
 ```javascript
@@ -48,7 +48,7 @@ Content-Length: 72
 ## Login
 
 ### Request
-Endpoint: `/api/user/login`<br>
+Endpoint: `/v1/api/users/login`<br>
 Method: `POST`<br>
 Request Body: 
 ```javascript
