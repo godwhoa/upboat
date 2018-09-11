@@ -8,15 +8,20 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf // indirect
 	github.com/cenkalti/backoff v2.0.0+incompatible // indirect
 	github.com/containerd/continuity v0.0.0-20180829013124-f44b615e492b // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/docker/distribution v2.6.2+incompatible // indirect
+	github.com/docker/docker v1.13.1 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.3.3 // indirect
 	github.com/frankban/quicktest v1.1.0
 	github.com/go-chi/chi v3.3.3+incompatible
 	github.com/go-ozzo/ozzo-validation v3.4.0+incompatible
+	github.com/go-sql-driver/mysql v1.4.0 // indirect
 	github.com/gofrs/uuid v3.1.0+incompatible
 	github.com/golang-migrate/migrate v3.4.0+incompatible
 	github.com/jmoiron/sqlx v0.0.0-20180614180643-0dae4fefe7c0
 	github.com/lib/pq v1.0.0
+	github.com/mattn/go-sqlite3 v1.9.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.1
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
@@ -24,8 +29,10 @@ require (
 	github.com/openzipkin/zipkin-go v0.1.1
 	github.com/ory/dockertest v3.3.2+incompatible
 	github.com/pkg/errors v0.8.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pressly/chi v3.3.3+incompatible
 	github.com/sirupsen/logrus v1.0.6 // indirect
+	github.com/stretchr/testify v1.2.2 // indirect
 	go.opencensus.io v0.16.0
 	go.uber.org/atomic v1.3.2 // indirect
 	go.uber.org/multierr v1.1.0 // indirect

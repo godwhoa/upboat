@@ -62,7 +62,7 @@ func main() {
 	us := users.NewService(repos.UserRepo)
 	us = users.Chain(us, users.Logging(log))
 	ps := posts.NewService(repos.PostRepo)
-	ps = posts.Chain(ps, posts.Logging(log))
+	ps = posts.Chain(ps, posts.Logging(log), posts.Tracing)
 	usersapi := api.NewUsersAPI(us, sessionManager, log)
 	postsapi := api.NewPostsAPI(ps, log)
 	// setup handlers

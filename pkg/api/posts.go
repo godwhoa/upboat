@@ -23,12 +23,13 @@ func NewPostsAPI(service posts.Service, log *zap.Logger) *PostsAPI {
 
 // Create creates a new post
 func (p *PostsAPI) Create(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	userID := ctx.Value("user_id").(int)
+
 	req := &createRequest{}
 	if !DecodeValidate(w, r, req) {
 		return
 	}
-	ctx := r.Context()
-	userID := ctx.Value("user_id").(int)
 
 	post := &posts.Post{
 		AuthorID: userID,
@@ -46,9 +47,10 @@ func (p *PostsAPI) Create(w http.ResponseWriter, r *http.Request) {
 
 // Get fetches a specific post by its ID
 func (p *PostsAPI) Get(w http.ResponseWriter, r *http.Request) {
-	postID := r.Context().Value("post_id").(int)
+	ctx := r.Context()
+	postID := ctx.Value("post_id").(int)
 
-	post, err := p.service.Get(postID)
+	post, err := p.service.Get(ctx, postID)
 	if err == posts.ErrPostNotFound {
 		Respond(w, NotFound("No such post"))
 		return
@@ -78,7 +80,7 @@ func (p *PostsAPI) Update(w http.ResponseWriter, r *http.Request) {
 		Title:    req.Title,
 		Body:     req.Body,
 	}
-	err := p.service.Edit(post)
+	err := p.service.Edit(ctx, post)
 	if err == posts.ErrUnauthorized {
 		Respond(w, Unauthorized(err.Error()))
 		return
@@ -97,7 +99,7 @@ func (p *PostsAPI) Delete(w http.ResponseWriter, r *http.Request) {
 	postID := ctx.Value("post_id").(int)
 	userID := ctx.Value("user_id").(int)
 
-	err := p.service.Delete(userID, postID)
+	err := p.service.Delete(ctx, userID, postID)
 	if err == posts.ErrUnauthorized {
 		Respond(w, Unauthorized(err.Error()))
 		return
@@ -112,9 +114,10 @@ func (p *PostsAPI) Delete(w http.ResponseWriter, r *http.Request) {
 
 // Votes fetches votes for a specific post
 func (p *PostsAPI) Votes(w http.ResponseWriter, r *http.Request) {
-	postID := r.Context().Value("post_id").(int)
+	ctx := r.Context()
+	postID := ctx.Value("post_id").(int)
 
-	votes, err := p.service.Votes(postID)
+	votes, err := p.service.Votes(ctx, postID)
 	if err == posts.ErrPostNotFound {
 		Respond(w, NotFound("No such post"))
 		return
@@ -129,16 +132,16 @@ func (p *PostsAPI) Votes(w http.ResponseWriter, r *http.Request) {
 
 // Vote votes on a specific post
 func (p *PostsAPI) Vote(w http.ResponseWriter, r *http.Request) {
-	postID := r.Context().Value("post_id").(int)
+	ctx := r.Context()
+	postID := ctx.Value("post_id").(int)
+	userID := ctx.Value("user_id").(int)
 
 	req := &voteRequest{}
 	if !DecodeValidate(w, r, req) {
 		return
 	}
 
-	userID := r.Context().Value("user_id").(int)
-
-	if err := p.service.Vote(postID, userID, req.Delta); err != nil {
+	if err := p.service.Vote(ctx, postID, userID, req.Delta); err != nil {
 		Respond(w, InternalError())
 		return
 	}
@@ -152,7 +155,7 @@ func (p *PostsAPI) Unvote(w http.ResponseWriter, r *http.Request) {
 	postID := ctx.Value("post_id").(int)
 	userID := ctx.Value("user_id").(int)
 
-	if err := p.service.Unvote(postID, userID); err != nil {
+	if err := p.service.Unvote(ctx, postID, userID); err != nil {
 		Respond(w, InternalError())
 		return
 	}

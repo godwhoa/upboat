@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"testing"
 
 	qt "github.com/frankban/quicktest"
@@ -10,6 +11,7 @@ import (
 
 func TestPostRepository(t *testing.T) {
 	c := qt.New(t)
+	ctx := context.Background()
 
 	db, purge, err := setupDB()
 	c.Assert(err, qt.IsNil)
@@ -42,7 +44,7 @@ func TestPostRepository(t *testing.T) {
 	postrepo := NewPostRepository(db)
 
 	// Create OK
-	postID, err := postrepo.Create(&posts.Post{
+	postID, err := postrepo.Create(ctx, &posts.Post{
 		AuthorID: userID,
 		Title:    "Testing!",
 		Body:     "Testing body",
@@ -50,12 +52,12 @@ func TestPostRepository(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	// Get
-	post, err := postrepo.Get(postID)
+	post, err := postrepo.Get(ctx, postID)
 	c.Assert(err, qt.IsNil)
 	c.Assert(post.AuthorID, qt.Equals, userID)
 
 	// Update
-	err = postrepo.Edit(&posts.Post{
+	err = postrepo.Edit(ctx, &posts.Post{
 		ID:       post.ID,
 		AuthorID: post.AuthorID,
 		Body:     "Updated",
@@ -64,37 +66,37 @@ func TestPostRepository(t *testing.T) {
 	c.Assert(err, qt.IsNil)
 
 	// Verify update
-	upost, err := postrepo.Get(post.ID)
+	upost, err := postrepo.Get(ctx, post.ID)
 	c.Assert(err, qt.IsNil)
 	c.Assert(upost.Title, qt.Equals, "Updated")
 	c.Assert(upost.Body, qt.Equals, "Updated")
 
 	// Vote
-	err = postrepo.Vote(post.ID, userID, +1)
+	err = postrepo.Vote(ctx, post.ID, userID, +1)
 	c.Assert(err, qt.IsNil)
-	err = postrepo.Vote(post.ID, user2ID, -1)
+	err = postrepo.Vote(ctx, post.ID, user2ID, -1)
 	c.Assert(err, qt.IsNil)
-	err = postrepo.Vote(post.ID, user2ID, +1)
+	err = postrepo.Vote(ctx, post.ID, user2ID, +1)
 	c.Assert(err, qt.IsNil)
 
 	// Get vote
-	votes, err := postrepo.Votes(post.ID)
+	votes, err := postrepo.Votes(ctx, post.ID)
 	c.Assert(err, qt.IsNil)
 	c.Assert(votes, qt.Equals, 2)
 
 	// Unvote
-	err = postrepo.Unvote(post.ID, userID)
+	err = postrepo.Unvote(ctx, post.ID, userID)
 	c.Assert(err, qt.IsNil)
-	err = postrepo.Unvote(post.ID, user2ID)
+	err = postrepo.Unvote(ctx, post.ID, user2ID)
 	c.Assert(err, qt.IsNil)
 	// Verify
-	votes, err = postrepo.Votes(post.ID)
+	votes, err = postrepo.Votes(ctx, post.ID)
 	c.Assert(err, qt.IsNil)
 	c.Assert(votes, qt.Equals, 0)
 
 	// Delete post
-	err = postrepo.Delete(userID, postID)
+	err = postrepo.Delete(ctx, userID, postID)
 	c.Assert(err, qt.IsNil)
-	_, err = postrepo.Get(postID)
+	_, err = postrepo.Get(ctx, postID)
 	c.Assert(err, qt.Equals, posts.ErrPostNotFound)
 }
