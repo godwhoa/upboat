@@ -1,7 +1,7 @@
 package users
 
 import (
-	"time"
+	"context"
 
 	"go.uber.org/zap"
 )
@@ -38,28 +38,16 @@ type loggingMiddleware struct {
 	log     *zap.Logger
 }
 
-func (m *loggingMiddleware) Register(user *User, password string) (u *User, err error) {
-	t0 := time.Now()
-	defer func() {
-		m.log.Info("Latency of users.Service.Register()",
-			zap.String("latency", time.Since(t0).String()),
-		)
-	}()
-	u, err = m.service.Register(user, password)
+func (m *loggingMiddleware) Register(ctx context.Context, user *User, password string) (u *User, err error) {
+	u, err = m.service.Register(ctx, user, password)
 	if err != ErrUserAlreadyExists && err != nil {
 		m.log.Error("Error from users.Service.Register()", zap.Error(err))
 	}
 	return
 }
 
-func (m *loggingMiddleware) Login(email string, password string) (u *User, err error) {
-	t0 := time.Now()
-	defer func() {
-		m.log.Info("Latency of users.Service.Login()",
-			zap.String("latency", time.Since(t0).String()),
-		)
-	}()
-	u, err = m.service.Login(email, password)
+func (m *loggingMiddleware) Login(ctx context.Context, email string, password string) (u *User, err error) {
+	u, err = m.service.Login(ctx, email, password)
 	if err != ErrInvalidCredentials && err != nil {
 		m.log.Error("Error from users.Service.Login()", zap.Error(err))
 	}
