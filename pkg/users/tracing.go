@@ -17,7 +17,7 @@ type tracingMiddleware struct {
 }
 
 func (m *tracingMiddleware) Register(ctx context.Context, user *User, password string) (*User, error) {
-	ctx, span := trace.StartSpan(ctx, "posts.Service.Register")
+	ctx, span := trace.StartSpan(ctx, "users.Service.Register")
 	defer span.End()
 	return m.service.Register(ctx, user, password)
 }

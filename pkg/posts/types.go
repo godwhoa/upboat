@@ -26,8 +26,10 @@ type Repository interface {
 	Get(ctx context.Context, postID int) (post *Post, err error)
 	Edit(ctx context.Context, post *Post) error
 	Delete(ctx context.Context, authorID, postID int) error
+	// Vote upserts a vote for a specific post/user
 	Vote(ctx context.Context, postID, voterID, delta int) error
 	Unvote(ctx context.Context, postID, voterID int) error
+	// Votes fetches votes on a specific post
 	Votes(ctx context.Context, postID int) (votes int, err error)
 }
 
