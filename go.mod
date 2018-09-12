@@ -6,6 +6,7 @@ require (
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/alexedwards/scs v1.3.0
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf // indirect
+	github.com/basvanbeek/ocsql v0.0.0-20180908125828-63b3e35325e2
 	github.com/cenkalti/backoff v2.0.0+incompatible // indirect
 	github.com/containerd/continuity v0.0.0-20180829013124-f44b615e492b // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

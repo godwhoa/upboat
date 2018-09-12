@@ -11,6 +11,7 @@ import (
 	"github.com/golang-migrate/migrate/database/postgres"
 	"github.com/golang-migrate/migrate/source/go_bindata"
 	"github.com/lib/pq"
+	"github.com/basvanbeek/ocsql"
 )
 
 // Options holds information for connecting to a postgres instance
@@ -31,7 +32,12 @@ func (o Options) ConnectionInfo() string {
 
 // NewFromOptions will connect to a postgresql server with given options
 func NewFromOptions(options Options) (*Repositories, error) {
-	db, err := sql.Open("postgres", options.ConnectionInfo())
+	driverName, err := ocsql.Register("postgres", ocsql.WithAllTraceOptions())
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := sql.Open(driverName, options.ConnectionInfo())
 	if err != nil {
 		return nil, err
 	}
