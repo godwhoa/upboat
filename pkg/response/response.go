@@ -1,20 +1,19 @@
-package api
+package response
 
 import (
 	"encoding/json"
 	"net/http"
-
-	v "github.com/go-ozzo/ozzo-validation"
 )
 
-type response struct {
+// Response is a standardized JSON response container
+type Response struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
 // Respond responds with JSON encoded `response`
-func Respond(w http.ResponseWriter, r *response) {
+func Respond(w http.ResponseWriter, r *Response) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(r.Code)
 	if json.NewEncoder(w).Encode(r) != nil {
@@ -22,78 +21,65 @@ func Respond(w http.ResponseWriter, r *response) {
 	}
 }
 
-// DecodeValidate decodes JSON, validates it and responds accordingly
-func DecodeValidate(w http.ResponseWriter, r *http.Request, obj v.Validatable) (ok bool) {
-	if err := json.NewDecoder(r.Body).Decode(obj); err != nil {
-		Respond(w, JSONError())
-		return false
-	}
-	if err := obj.Validate(); err != nil {
-		Respond(w, ValidationError(err))
-		return false
-	}
-	return true
-}
-
 // Helper functions for syntatic sugar
-func Ok(msg string) *response {
-	return &response{
+func Ok(msg string) *Response {
+	return &Response{
 		Code:    http.StatusOK,
 		Message: msg,
 		Data:    nil,
 	}
 }
 
-func OkData(msg string, data interface{}) *response {
-	return &response{
+func OkData(msg string, data interface{}) *Response {
+	return &Response{
 		Code:    http.StatusOK,
 		Message: msg,
 		Data:    data,
 	}
 }
 
-func Created(msg string, data interface{}) *response {
-	return &response{
+func Created(msg string, data interface{}) *Response {
+	return &Response{
 		Code:    http.StatusCreated,
 		Message: msg,
 		Data:    data,
 	}
 }
 
-func NotFound(msg string) *response {
-	return &response{
+func NotFound(msg string) *Response {
+	return &Response{
 		Code:    http.StatusNotFound,
 		Message: msg,
 		Data:    nil,
 	}
 }
 
-func Unauthorized(msg string) *response {
-	return &response{
+func Unauthorized(msg string) *Response {
+	return &Response{
 		Code:    http.StatusUnauthorized,
 		Message: msg,
 		Data:    nil,
 	}
 }
 
-func InternalError() *response {
-	return &response{
+func InternalError() *Response {
+	return &Response{
 		Code:    http.StatusInternalServerError,
 		Message: "Internal Error",
 		Data:    nil,
 	}
 }
 
-func JSONError() *response {
-	return &response{
+func JSONError() *Response {
+	return &Response{
 		Code:    http.StatusBadRequest,
 		Message: "Invalid JSON",
 		Data:    nil,
 	}
 }
 
-func ValidationError(err error) *response {
-	return &response{
+func ValidationError(err error) *Response {
+	return &Response{
 		Code:    http.StatusBadRequest,
 		Message: "Validation Error",
 		Data:    err,

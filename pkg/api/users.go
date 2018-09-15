@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/alexedwards/scs"
+	R "github.com/godwhoa/upboat/pkg/response"
 	"github.com/godwhoa/upboat/pkg/users"
 	"go.uber.org/zap"
 )
@@ -32,7 +33,7 @@ func (u *UsersAPI) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, err := u.service.Login(ctx, req.Email, req.Password)
 	if err == users.ErrInvalidCredentials {
-		Respond(w, &response{
+		R.Respond(w, &R.Response{
 			Code:    http.StatusUnauthorized,
 			Message: err.Error(),
 			Data:    nil,
@@ -41,19 +42,19 @@ func (u *UsersAPI) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		Respond(w, InternalError())
+		R.Respond(w, R.InternalError())
 		return
 	}
 
 	session := u.sm.Load(r)
 	err = session.PutInt(w, "user_id", user.ID)
 	if err != nil {
-		Respond(w, InternalError())
+		R.Respond(w, R.InternalError())
 		u.log.Error("Error from session.PutInt()", zap.Error(err))
 		return
 	}
 
-	Respond(w, Ok("Logged in!"))
+	R.Respond(w, R.Ok("Logged in!"))
 }
 
 // Register handles user registration request
@@ -69,7 +70,7 @@ func (u *UsersAPI) Register(w http.ResponseWriter, r *http.Request) {
 		Username: req.Username,
 	}, req.Password)
 	if err == users.ErrUserAlreadyExists {
-		Respond(w, &response{
+		R.Respond(w, &R.Response{
 			Code:    http.StatusConflict,
 			Message: "User Already Exists",
 			Data:    nil,
@@ -78,11 +79,11 @@ func (u *UsersAPI) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	// log unexpected error
 	if err != nil {
-		Respond(w, InternalError())
+		R.Respond(w, R.InternalError())
 		return
 	}
 	// Ok
-	Respond(w, Ok("Registered!"))
+	R.Respond(w, R.Ok("Registered!"))
 }
 
 // Logout clears the session
@@ -90,9 +91,9 @@ func (u *UsersAPI) Logout(w http.ResponseWriter, r *http.Request) {
 	session := u.sm.Load(r)
 	err := session.Remove(w, "user_id")
 	if err != nil {
-		Respond(w, InternalError())
+		R.Respond(w, R.InternalError())
 		u.log.Error("Error from session.Remove()", zap.Error(err))
 		return
 	}
-	Respond(w, Ok("Logged out!"))
+	R.Respond(w, R.Ok("Logged out!"))
 }
