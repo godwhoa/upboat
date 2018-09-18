@@ -4,24 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	v "github.com/go-ozzo/ozzo-validation"
 	"github.com/godwhoa/upboat/pkg/posts"
 	R "github.com/godwhoa/upboat/pkg/response"
 	"go.uber.org/zap"
 )
-
-// DecodeValidate decodes JSON, validates it and responds accordingly
-func DecodeValidate(w http.ResponseWriter, r *http.Request, obj v.Validatable) (ok bool) {
-	if err := json.NewDecoder(r.Body).Decode(obj); err != nil {
-		R.Respond(w, R.JSONError())
-		return false
-	}
-	if err := obj.Validate(); err != nil {
-		R.Respond(w, R.ValidationError(err))
-		return false
-	}
-	return true
-}
 
 // PostsAPI contains all the handlers releated to posts
 type PostsAPI struct {
@@ -43,7 +29,12 @@ func (p *PostsAPI) Create(w http.ResponseWriter, r *http.Request) {
 	userID := ctx.Value("user_id").(int)
 
 	req := &createRequest{}
-	if !DecodeValidate(w, r, req) {
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		R.Respond(w, R.Err(err))
+		return
+	}
+	if err := req.Validate(); err != nil {
+		R.Respond(w, R.Err(err))
 		return
 	}
 
@@ -54,7 +45,7 @@ func (p *PostsAPI) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	postID, err := p.service.Create(ctx, post)
 	if err != nil {
-		R.Respond(w, R.InternalError())
+		R.Respond(w, R.Err(err))
 		return
 	}
 
@@ -67,12 +58,8 @@ func (p *PostsAPI) Get(w http.ResponseWriter, r *http.Request) {
 	postID := ctx.Value("post_id").(int)
 
 	post, err := p.service.Get(ctx, postID)
-	if err == posts.ErrPostNotFound {
-		R.Respond(w, R.NotFound("No such post"))
-		return
-	}
 	if err != nil {
-		R.Respond(w, R.InternalError())
+		R.Respond(w, R.Err(err))
 		return
 	}
 
@@ -86,7 +73,12 @@ func (p *PostsAPI) Update(w http.ResponseWriter, r *http.Request) {
 	userID := ctx.Value("user_id").(int)
 
 	req := &updateRequest{}
-	if !DecodeValidate(w, r, req) {
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		R.Respond(w, R.Err(err))
+		return
+	}
+	if err := req.Validate(); err != nil {
+		R.Respond(w, R.Err(err))
 		return
 	}
 
@@ -97,12 +89,8 @@ func (p *PostsAPI) Update(w http.ResponseWriter, r *http.Request) {
 		Body:     req.Body,
 	}
 	err := p.service.Edit(ctx, post)
-	if err == posts.ErrUnauthorized {
-		R.Respond(w, R.Unauthorized(err.Error()))
-		return
-	}
 	if err != nil {
-		R.Respond(w, R.InternalError())
+		R.Respond(w, R.Err(err))
 		return
 	}
 
@@ -116,12 +104,8 @@ func (p *PostsAPI) Delete(w http.ResponseWriter, r *http.Request) {
 	userID := ctx.Value("user_id").(int)
 
 	err := p.service.Delete(ctx, userID, postID)
-	if err == posts.ErrUnauthorized {
-		R.Respond(w, R.Unauthorized(err.Error()))
-		return
-	}
 	if err != nil {
-		R.Respond(w, R.InternalError())
+		R.Respond(w, R.Err(err))
 		return
 	}
 
@@ -134,12 +118,8 @@ func (p *PostsAPI) Votes(w http.ResponseWriter, r *http.Request) {
 	postID := ctx.Value("post_id").(int)
 
 	votes, err := p.service.Votes(ctx, postID)
-	if err == posts.ErrPostNotFound {
-		R.Respond(w, R.NotFound("No such post"))
-		return
-	}
 	if err != nil {
-		R.Respond(w, R.InternalError())
+		R.Respond(w, R.Err(err))
 		return
 	}
 
@@ -153,12 +133,17 @@ func (p *PostsAPI) Vote(w http.ResponseWriter, r *http.Request) {
 	userID := ctx.Value("user_id").(int)
 
 	req := &voteRequest{}
-	if !DecodeValidate(w, r, req) {
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		R.Respond(w, R.Err(err))
+		return
+	}
+	if err := req.Validate(); err != nil {
+		R.Respond(w, R.Err(err))
 		return
 	}
 
 	if err := p.service.Vote(ctx, postID, userID, req.Delta); err != nil {
-		R.Respond(w, R.InternalError())
+		R.Respond(w, R.Err(err))
 		return
 	}
 
@@ -172,7 +157,7 @@ func (p *PostsAPI) Unvote(w http.ResponseWriter, r *http.Request) {
 	userID := ctx.Value("user_id").(int)
 
 	if err := p.service.Unvote(ctx, postID, userID); err != nil {
-		R.Respond(w, R.InternalError())
+		R.Respond(w, R.Err(err))
 		return
 	}
 
