@@ -3,6 +3,9 @@ package response
 import (
 	"encoding/json"
 	"net/http"
+
+	v "github.com/go-ozzo/ozzo-validation"
+	"github.com/godwhoa/upboat/pkg/errors"
 )
 
 // Response is a standardized JSON response container
@@ -43,6 +46,46 @@ func Created(msg string, data interface{}) *Response {
 		Code:    http.StatusCreated,
 		Message: msg,
 		Data:    data,
+	}
+}
+
+func renderE(e *errors.Error) *Response {
+	switch e.Kind {
+	case errors.NotFound:
+		return NotFound(e.Message)
+	case errors.Conflict:
+		return &Response{
+			Code:    http.StatusConflict,
+			Message: e.Message,
+			Data:    nil,
+		}
+	case errors.Invalid:
+		return &Response{
+			Code:    http.StatusBadRequest,
+			Message: e.Message,
+			Data:    nil,
+		}
+	case errors.Unauthorized:
+		return &Response{
+			Code:    http.StatusUnauthorized,
+			Message: e.Message,
+			Data:    nil,
+		}
+	case errors.Internal:
+		return InternalError()
+	default:
+		return InternalError()
+	}
+}
+
+func Err(err error) *Response {
+	switch err := err.(type) {
+	case *errors.Error:
+		return renderE(err)
+	case v.Errors:
+		return ValidationError(err)
+	default:
+		return InternalError()
 	}
 }
 
