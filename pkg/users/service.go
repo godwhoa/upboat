@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 
+	"github.com/godwhoa/upboat/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,7 +20,7 @@ func NewService(repo Repository) Service {
 func (s *service) Register(ctx context.Context, u *User, password string) (*User, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
+		return nil, errors.E(errors.Internal, errors.Op("bcrypt.GenerateFromPassword"), err)
 	}
 	u.Hash = string(hashed)
 

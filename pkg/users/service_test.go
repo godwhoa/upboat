@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	qt "github.com/frankban/quicktest"
+	"github.com/godwhoa/upboat/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -81,7 +82,7 @@ func TestService_Register_AlreadyExists(t *testing.T) {
 	repo := &mockRepo{createerr: true}
 	service := NewService(repo)
 	user, err := service.Register(ctx, &User{Username: "blah", Email: "blah@blah.com"}, "password")
-	c.Assert(err, qt.Equals, ErrUserAlreadyExists)
+	c.Assert(errors.Is(errors.Conflict, err), qt.Equals, true)
 	c.Assert(user, qt.IsNil)
 }
 
@@ -126,7 +127,7 @@ func TestService_Login_NotFound(t *testing.T) {
 	service := NewService(&mockRepo{u: u, finderr: true})
 	user, err := service.Login(ctx, "apple@kak.com", "password")
 	c.Assert(user, qt.IsNil)
-	c.Assert(err, qt.Equals, ErrUserNotFound)
+	c.Assert(errors.Is(errors.NotFound, err), qt.Equals, true)
 }
 
 func TestService_LoginInvalid(t *testing.T) {
@@ -142,5 +143,5 @@ func TestService_LoginInvalid(t *testing.T) {
 	service := NewService(&mockRepo{u: u})
 	user, err := service.Login(ctx, "blah@blah.com", "passwordddd")
 	c.Assert(user, qt.IsNil)
-	c.Assert(err, qt.Equals, ErrInvalidCredentials)
+	c.Assert(errors.Is(errors.Unauthorized, err), qt.Equals, true)
 }

@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 
+	"github.com/godwhoa/upboat/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -40,7 +41,7 @@ type loggingMiddleware struct {
 
 func (m *loggingMiddleware) Register(ctx context.Context, user *User, password string) (u *User, err error) {
 	u, err = m.service.Register(ctx, user, password)
-	if err != ErrUserAlreadyExists && err != nil {
+	if errors.Is(errors.Internal, err) {
 		m.log.Error("Error from users.Service.Register()", zap.Error(err))
 	}
 	return
@@ -48,7 +49,7 @@ func (m *loggingMiddleware) Register(ctx context.Context, user *User, password s
 
 func (m *loggingMiddleware) Login(ctx context.Context, email string, password string) (u *User, err error) {
 	u, err = m.service.Login(ctx, email, password)
-	if err != ErrInvalidCredentials && err != nil {
+	if errors.Is(errors.Internal, err) {
 		m.log.Error("Error from users.Service.Login()", zap.Error(err))
 	}
 	return

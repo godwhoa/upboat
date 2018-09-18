@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/godwhoa/upboat/pkg/errors"
 	"github.com/godwhoa/upboat/pkg/users"
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -23,6 +24,7 @@ func NewUserRepository(db *sql.DB) users.Repository {
 
 // Create creates a new user
 func (repo *UserRepository) Create(ctx context.Context, user *users.User) error {
+	op := errors.Op("UserRepository.Create")
 	stmt := `INSERT INTO users(uid, username, email, hash) VALUES($1, $2, $3, $4)`
 
 	uid := uuid.Must(uuid.NewV4()).String()
@@ -31,12 +33,12 @@ func (repo *UserRepository) Create(ctx context.Context, user *users.User) error 
 	if IsUniqueKeyViolation(err) {
 		return users.ErrUserAlreadyExists
 	}
-
-	return err
+	return errors.E(errors.Internal, op, err)
 }
 
 // Find finds an user by id
 func (repo *UserRepository) Find(ctx context.Context, id int) (*users.User, error) {
+	op := errors.Op("users.Repository.Find")
 	query := `SELECT id, username, email, hash FROM users WHERE id = $1;`
 
 	user := &users.User{}
@@ -45,11 +47,15 @@ func (repo *UserRepository) Find(ctx context.Context, id int) (*users.User, erro
 	if err == sql.ErrNoRows {
 		return nil, users.ErrUserNotFound
 	}
-	return user, err
+	if err != nil {
+		return nil, errors.E(errors.Internal, op, err)
+	}
+	return user, nil
 }
 
 // FindByEmail finds by email
 func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (*users.User, error) {
+	op := errors.Op("users.Repository.FindByEmail")
 	query := `SELECT id, username, email, hash FROM users WHERE email = $1;`
 
 	user := &users.User{}
@@ -58,5 +64,8 @@ func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (*use
 	if err == sql.ErrNoRows {
 		return nil, users.ErrUserNotFound
 	}
-	return user, err
+	if err != nil {
+		return nil, errors.E(errors.Internal, op, err)
+	}
+	return user, nil
 }

@@ -2,16 +2,17 @@ package users
 
 import (
 	"context"
-	"errors"
+
+	"github.com/godwhoa/upboat/pkg/errors"
 )
 
 var (
 	// ErrUserAlreadyExists is returned if an user is already registred with the given email or username.
-	ErrUserAlreadyExists = errors.New("User already exists")
+	ErrUserAlreadyExists = errors.E(errors.Conflict, "User already exists")
 	// ErrInvalidCredentials is returned if login credentials are invalid.
-	ErrInvalidCredentials = errors.New("Invalid login credentials")
+	ErrInvalidCredentials = errors.E(errors.Unauthorized, "Invalid login credentials")
 	// ErrUserNotFound is returned if user in not found in the database
-	ErrUserNotFound = errors.New("User not found")
+	ErrUserNotFound = errors.E(errors.NotFound, "User not found")
 )
 
 // User models an user

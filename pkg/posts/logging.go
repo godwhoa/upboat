@@ -3,6 +3,7 @@ package posts
 import (
 	"context"
 
+	"github.com/godwhoa/upboat/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -37,18 +38,9 @@ type loggingMiddleware struct {
 	log     *zap.Logger
 }
 
-func isImportant(err error) bool {
-	switch err {
-	case ErrPostNotFound, nil, ErrUnauthorized:
-		return false
-	default:
-		return true
-	}
-}
-
 func (m *loggingMiddleware) Create(ctx context.Context, post *Post) (id int, err error) {
 	id, err = m.service.Create(ctx, post)
-	if isImportant(err) {
+	if errors.Is(errors.Internal, err) {
 		m.log.Error("Error from posts.Service.Create()", zap.Error(err))
 	}
 	return
@@ -56,7 +48,7 @@ func (m *loggingMiddleware) Create(ctx context.Context, post *Post) (id int, err
 
 func (m *loggingMiddleware) Get(ctx context.Context, postID int) (post *Post, err error) {
 	post, err = m.service.Get(ctx, postID)
-	if isImportant(err) {
+	if errors.Is(errors.Internal, err) {
 		m.log.Error("Error from posts.Service.Get()", zap.Error(err))
 	}
 	return
@@ -64,7 +56,7 @@ func (m *loggingMiddleware) Get(ctx context.Context, postID int) (post *Post, er
 
 func (m *loggingMiddleware) Edit(ctx context.Context, post *Post) (err error) {
 	err = m.service.Edit(ctx, post)
-	if isImportant(err) {
+	if errors.Is(errors.Internal, err) {
 		m.log.Error("Error from posts.Service.Edit()", zap.Error(err))
 	}
 	return
@@ -72,7 +64,7 @@ func (m *loggingMiddleware) Edit(ctx context.Context, post *Post) (err error) {
 
 func (m *loggingMiddleware) Delete(ctx context.Context, postID, authorID int) (err error) {
 	err = m.service.Delete(ctx, postID, authorID)
-	if isImportant(err) {
+	if errors.Is(errors.Internal, err) {
 		m.log.Error("Error from posts.Service.Delete()", zap.Error(err))
 	}
 	return
@@ -80,7 +72,7 @@ func (m *loggingMiddleware) Delete(ctx context.Context, postID, authorID int) (e
 
 func (m *loggingMiddleware) Vote(ctx context.Context, postID, voterID, delta int) (err error) {
 	err = m.service.Vote(ctx, postID, voterID, delta)
-	if isImportant(err) {
+	if errors.Is(errors.Internal, err) {
 		m.log.Error("Error from posts.Service.Vote()", zap.Error(err))
 	}
 	return
@@ -88,7 +80,7 @@ func (m *loggingMiddleware) Vote(ctx context.Context, postID, voterID, delta int
 
 func (m *loggingMiddleware) Unvote(ctx context.Context, postID, voterID int) (err error) {
 	err = m.service.Unvote(ctx, postID, voterID)
-	if isImportant(err) {
+	if errors.Is(errors.Internal, err) {
 		m.log.Error("Error from posts.Service.Unvote()", zap.Error(err))
 	}
 	return
@@ -96,7 +88,7 @@ func (m *loggingMiddleware) Unvote(ctx context.Context, postID, voterID int) (er
 
 func (m *loggingMiddleware) Votes(ctx context.Context, postID int) (votes int, err error) {
 	votes, err = m.service.Votes(ctx, postID)
-	if isImportant(err) {
+	if errors.Is(errors.Internal, err) {
 		m.log.Error("Error from posts.Service.Votes()", zap.Error(err))
 	}
 	return

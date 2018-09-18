@@ -2,7 +2,8 @@ package posts
 
 import (
 	"context"
-	"errors"
+
+	"github.com/godwhoa/upboat/pkg/errors"
 )
 
 // Post models a post
@@ -15,9 +16,9 @@ type Post struct {
 
 var (
 	// ErrPostNotFound for when post is not found.
-	ErrPostNotFound = errors.New("Post not found")
+	ErrPostNotFound = errors.E(errors.NotFound, "Post not found")
 	// ErrUnauthorized for when a user tries to delete or edit of another user
-	ErrUnauthorized = errors.New("Unauthorized to delete/edit the post")
+	ErrUnauthorized = errors.E(errors.Unauthorized, "Unauthorized to delete/edit the post")
 )
 
 // Repository handles storing posts and their votes
