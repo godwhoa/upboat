@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -48,6 +49,7 @@ func setupDB() (*sql.DB, func(), error) {
 }
 
 func TestUserRepository(t *testing.T) {
+	ctx := context.Background()
 	c := qt.New(t)
 
 	db, purge, err := setupDB()
@@ -56,36 +58,36 @@ func TestUserRepository(t *testing.T) {
 
 	userrepo := NewUserRepository(db)
 	// Create OK
-	err = userrepo.Create(&users.User{
+	err = userrepo.Create(ctx, &users.User{
 		Username: "pacninja",
 		Email:    "pac@pac.com",
 		Hash:     "bcrypt_hash",
 	})
 	c.Assert(err, qt.IsNil)
 	// Create AlreadyExists
-	err = userrepo.Create(&users.User{
+	err = userrepo.Create(ctx, &users.User{
 		Username: "pacninja",
 		Email:    "pac@pac.com",
 		Hash:     "bcrypt_hash",
 	})
 	c.Assert(err, qt.Equals, users.ErrUserAlreadyExists)
 	// FindByEmail OK
-	user, err := userrepo.FindByEmail("pac@pac.com")
+	user, err := userrepo.FindByEmail(ctx, "pac@pac.com")
 	c.Assert(err, qt.IsNil)
 	c.Assert(user, qt.Not(qt.IsNil))
 	c.Assert(user.Username, qt.Equals, "pacninja")
 	c.Assert(user.Hash, qt.Equals, "bcrypt_hash")
 	id := user.ID
 	// FindByEmail User not Found
-	_, err = userrepo.FindByEmail("none@none.com")
+	_, err = userrepo.FindByEmail(ctx, "none@none.com")
 	c.Assert(err, qt.Equals, users.ErrUserNotFound)
 	// Find OK
-	user, err = userrepo.Find(id)
+	user, err = userrepo.Find(ctx, id)
 	c.Assert(err, qt.IsNil)
 	c.Assert(user, qt.Not(qt.IsNil))
 	c.Assert(user.Username, qt.Equals, "pacninja")
 	c.Assert(user.Hash, qt.Equals, "bcrypt_hash")
 	// Find User Not Found
-	_, err = userrepo.Find(666)
+	_, err = userrepo.Find(ctx, 666)
 	c.Assert(err, qt.Equals, users.ErrUserNotFound)
 }
