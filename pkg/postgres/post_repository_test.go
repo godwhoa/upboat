@@ -19,25 +19,25 @@ func TestPostRepository(t *testing.T) {
 
 	userrepo := NewUserRepository(db)
 	// setup user
-	err = userrepo.Create(&users.User{
+	err = userrepo.Create(ctx, &users.User{
 		Username: "pacninja",
 		Email:    "pac@pac.com",
 		Hash:     "bcrypt_hash",
 	})
 	c.Assert(err, qt.IsNil)
 
-	user, err := userrepo.FindByEmail("pac@pac.com")
+	user, err := userrepo.FindByEmail(ctx, "pac@pac.com")
 	c.Assert(err, qt.IsNil)
 	userID := user.ID
 
-	err = userrepo.Create(&users.User{
+	err = userrepo.Create(ctx, &users.User{
 		Username: "lala",
 		Email:    "lala@lala.com",
 		Hash:     "bcrypt_hash",
 	})
 	c.Assert(err, qt.IsNil)
 
-	user2, err := userrepo.FindByEmail("lala@lala.com")
+	user2, err := userrepo.FindByEmail(ctx, "lala@lala.com")
 	c.Assert(err, qt.IsNil)
 	user2ID := user2.ID
 
