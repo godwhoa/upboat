@@ -33,7 +33,10 @@ func (repo *UserRepository) Create(ctx context.Context, user *users.User) error 
 	if IsUniqueKeyViolation(err) {
 		return users.ErrUserAlreadyExists
 	}
-	return errors.E(errors.Internal, op, err)
+	if err != nil {
+		return errors.E(errors.Internal, op, err)
+	}
+	return nil
 }
 
 // Find finds an user by id
