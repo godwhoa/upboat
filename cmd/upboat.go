@@ -78,13 +78,16 @@ func main() {
 			r.Use(middleware.Auth(sessionManager))
 			// CRUD posts
 			r.Post("/", postsapi.Create)
-			r.With(middleware.PostID).Get("/{postID}", postsapi.Get)
-			r.With(middleware.PostID).Put("/{postID}", postsapi.Update)
-			r.With(middleware.PostID).Delete("/{postID}", postsapi.Delete)
-			// CRUD vote
-			r.With(middleware.PostID).Get("/{postID}/vote", postsapi.Votes)
-			r.With(middleware.PostID).Post("/{postID}/vote", postsapi.Vote)
-			r.With(middleware.PostID).Delete("/{postID}/vote", postsapi.Unvote)
+			r.Group(func(r chi.Router) {
+				r.Use(middleware.PostID)
+				r.Get("/{postID}", postsapi.Get)
+				r.Put("/{postID}", postsapi.Update)
+				r.Delete("/{postID}", postsapi.Delete)
+				// CRUD vote
+				r.Get("/{postID}/vote", postsapi.Votes)
+				r.Post("/{postID}/vote", postsapi.Vote)
+				r.Delete("/{postID}/vote", postsapi.Unvote)
+			})
 		})
 	})
 	r.Get("/v1/map", func(w http.ResponseWriter, _ *http.Request) {
