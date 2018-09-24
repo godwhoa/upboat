@@ -51,8 +51,8 @@ func (m *tracingMiddleware) Unvote(ctx context.Context, postID, voterID int) (er
 	return m.service.Unvote(ctx, postID, voterID)
 }
 
-func (m *tracingMiddleware) Votes(ctx context.Context, postID int) (votes int, err error) {
-	ctx, span := trace.StartSpan(ctx, "posts.Service.Votes")
+func (m *tracingMiddleware) Score(ctx context.Context, postID int) (score int, err error) {
+	ctx, span := trace.StartSpan(ctx, "posts.Service.Score")
 	defer span.End()
-	return m.service.Votes(ctx, postID)
+	return m.service.Score(ctx, postID)
 }

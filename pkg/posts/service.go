@@ -47,6 +47,6 @@ func (s *service) Unvote(ctx context.Context, postID, voterID int) error {
 	return s.repo.Unvote(ctx, postID, voterID)
 }
 
-func (s *service) Votes(ctx context.Context, postID int) (int, error) {
-	return s.repo.Votes(ctx, postID)
+func (s *service) Score(ctx context.Context, postID int) (int, error) {
+	return s.repo.Score(ctx, postID)
 }

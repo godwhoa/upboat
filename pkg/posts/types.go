@@ -31,7 +31,7 @@ type Repository interface {
 	Vote(ctx context.Context, postID, voterID, delta int) error
 	Unvote(ctx context.Context, postID, voterID int) error
 	// Votes fetches votes on a specific post
-	Votes(ctx context.Context, postID int) (votes int, err error)
+	Score(ctx context.Context, postID int) (score int, err error)
 }
 
 // Service is a thin layer around Repository which sanitizes Title and Body

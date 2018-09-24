@@ -96,11 +96,11 @@ func (repo *PostRepository) Unvote(ctx context.Context, postID int, voterID int)
 	return err
 }
 
-func (repo *PostRepository) Votes(ctx context.Context, postID int) (votes int, err error) {
+func (repo *PostRepository) Score(ctx context.Context, postID int) (score int, err error) {
 	query := `SELECT COALESCE(SUM(delta), 0) FROM post_votes WHERE post_id = $1`
 
 	err = repo.db.QueryRowContext(ctx, query, postID).
-		Scan(&votes)
+		Scan(&score)
 	if err == sql.ErrNoRows {
 		err = posts.ErrPostNotFound
 	}

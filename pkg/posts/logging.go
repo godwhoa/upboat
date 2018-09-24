@@ -86,10 +86,10 @@ func (m *loggingMiddleware) Unvote(ctx context.Context, postID, voterID int) (er
 	return
 }
 
-func (m *loggingMiddleware) Votes(ctx context.Context, postID int) (votes int, err error) {
-	votes, err = m.service.Votes(ctx, postID)
+func (m *loggingMiddleware) Score(ctx context.Context, postID int) (score int, err error) {
+	score, err = m.service.Score(ctx, postID)
 	if errors.Is(errors.Internal, err) {
-		m.log.Error("Error from posts.Service.Votes()", zap.Error(err))
+		m.log.Error("Error from posts.Service.Score()", zap.Error(err))
 	}
 	return
 }
