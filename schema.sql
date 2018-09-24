@@ -36,10 +36,30 @@ CREATE TABLE comments(
     post_id INTEGER REFERENCES posts(id),
     parent_id INTEGER REFERENCES comments(id),
     commenter_id INTEGER REFERENCES users(id),
+    depth INTEGER NOT NULL,
     body TEXT NOT NULL,
     created TIMESTAMP DEFAULT now(),
     deleted TIMESTAMP DEFAULT NULL
 );
+INSERT INTO comments(post_id, parent_id, commenter_id, depth, body) VALUES 
+(1,NULL,1,0, "blah blah");
+
+parent_depth = SELECT depth FROM comments WHERE id = $1;
+INSERT INTO comments(post_id, parent_id, commenter_id, depth, body) VALUES 
+(1,1,1,0, "blah blah");
+
+
+CREATE OR REPLACE FUNCTION cal_depth(parent_id integer) 
+RETURNS integer AS $$
+DECLARE parent_depth INTEGER
+BEGIN
+        IF parent_id IS NULL THEN
+            RETURN 0;
+        END IF;
+        SELECT depth INTO parent_depth FROM comments WHERE id = parent_id;
+        RETURN parent_depth + 1;
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE TABLE comment_votes(
     id serial PRIMARY KEY,
