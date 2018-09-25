@@ -49,7 +49,7 @@ INSERT INTO comments(post_id, parent_id, commenter_id, depth, body) VALUES
 (1,1,1,0, "blah blah");
 
 
-CREATE OR REPLACE FUNCTION cal_depth(parent_id integer) 
+CREATE OR REPLACE FUNCTION calculate_depth(parent_id integer) 
 RETURNS integer AS $$
 DECLARE parent_depth INTEGER
 BEGIN
