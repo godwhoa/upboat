@@ -12,7 +12,7 @@ type service struct {
 	repo Repository
 }
 
-func (s *service) Create(ctx context.Context, comment *Comment) error {
+func (s *service) Create(ctx context.Context, comment *Comment) (int, error) {
 	comment.Body = policy.Sanitize(comment.Body)
 	return s.repo.Create(ctx, comment)
 }

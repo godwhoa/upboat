@@ -7,14 +7,16 @@ import (
 )
 
 type Comment struct {
-	ID       int    `json:"id"`
-	PostID   int    `json:"post_id"`
-	ParentID *int   `json:"parent_id"`
-	AuthorID int    `json:"author_id"`
-	Body     string `json:"body"`
+	ID          int    `json:"id"`
+	PostID      int    `json:"post_id"`
+	ParentID    *int   `json:"parent_id"`
+	CommenterID int    `json:"author_id"`
+	Body        string `json:"body"`
 }
 
 var (
+	// ErrCommentNotFound for when comment is not found.
+	ErrCommentNotFound = errors.E(errors.NotFound, "Comment(s) not found")
 	// ErrPostNotFound for when post is not found.
 	ErrPostNotFound = errors.E(errors.NotFound, "Post not found")
 	// ErrUnauthorized for when a user tries to delete or edit of another user
@@ -23,7 +25,7 @@ var (
 
 // TODO: think about depth and limit of nested comments
 type Repository interface {
-	Create(ctx context.Context, comment *Comment) error
+	Create(ctx context.Context, comment *Comment) (id int, err error)
 	Comments(ctx context.Context, postID int) ([]*Comment, error)
 	Delete(ctx context.Context, commentID, authorID int) error
 	Vote(ctx context.Context, commentID, voterID, delta int) error
