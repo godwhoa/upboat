@@ -113,17 +113,17 @@ func (p *PostsAPI) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 // Votes fetches votes for a specific post
-func (p *PostsAPI) Votes(w http.ResponseWriter, r *http.Request) {
+func (p *PostsAPI) Score(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	postID := ctx.Value("post_id").(int)
 
-	votes, err := p.service.Votes(ctx, postID)
+	score, err := p.service.Score(ctx, postID)
 	if err != nil {
 		R.Respond(w, R.Err(err))
 		return
 	}
 
-	R.Respond(w, R.Created("Votes for the post", map[string]int{"votes": votes}))
+	R.Respond(w, R.Created("Score for the post", map[string]int{"score": score}))
 }
 
 // Vote votes on a specific post

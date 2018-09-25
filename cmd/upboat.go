@@ -84,7 +84,7 @@ func main() {
 				r.Put("/{postID}", postsapi.Update)
 				r.Delete("/{postID}", postsapi.Delete)
 				// CRUD vote
-				r.Get("/{postID}/vote", postsapi.Votes)
+				r.Get("/{postID}/score", postsapi.Score)
 				r.Post("/{postID}/vote", postsapi.Vote)
 				r.Delete("/{postID}/vote", postsapi.Unvote)
 			})
